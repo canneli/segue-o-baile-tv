@@ -1,24 +1,32 @@
 # Segue o Baile TV — portal e estúdio editorial
 
-Portal de matérias com identidade baseada na logo original do Segue o Baile TV. O estúdio em `/estudio` permite que Daniel publique uma matéria com link de vídeo do YouTube, imagem ou vídeo enviado. O cartão, a tipografia, a capa e a página da matéria seguem automaticamente o mesmo padrão do portal.
+Portal com a identidade visual do Segue o Baile TV e seis matérias de exemplo baseadas em vídeos do canal oficial. O site é gerado como páginas estáticas e publicado gratuitamente pelo GitHub Pages em:
 
-## Como publicar uma matéria, depois que o site estiver no ar
+**https://canneli.github.io/segue-o-baile-tv/**
 
-1. Abra `/estudio` no endereço do portal e entre com a senha editorial.
-2. Escolha a categoria e preencha autoria, título, resumo e texto. Separe parágrafos do texto com uma linha em branco.
-3. Escolha **Link do YouTube**, **Enviar imagem** ou **Enviar vídeo**. Imagens aceitas: JPG, PNG e WebP. Vídeos enviados: MP4 e WebM, até 25 MB. Para vídeos maiores, publique-os no canal e cole o link do YouTube.
-4. Confira o cartão na **prévia em tempo real** à direita. Clique em **Publicar matéria**.
-5. A matéria aparecerá no início do portal e ganhará uma página própria. O estúdio mostra o link da matéria publicada.
+## Como Daniel publica uma matéria nova
 
-O conteúdo não precisa ser formatado manualmente: a apresentação é aplicada pelo próprio site. A senha editorial deve ser compartilhada somente com quem pode publicar.
+1. Abra **https://canneli.github.io/segue-o-baile-tv/estudio/**.
+2. Preencha título, resumo, categoria, autoria e texto. Separe os parágrafos com uma linha em branco. A prévia mostra o design automaticamente.
+3. Escolha um link do YouTube ou envie JPG, PNG, WebP, MP4 ou WebM (até 25 MB). Para vídeo maior, publique no YouTube e cole o link.
+4. Cole uma **chave de publicação do GitHub** com permissão de escrita somente neste repositório. Ela não fica salva no navegador nem no site. Clique em **Publicar matéria**.
+5. O Estúdio envia o conteúdo ao repositório. A automação do GitHub atualiza o portal em alguns minutos. O botão **Ver atualização do site** mostra o andamento.
 
-## Antes de usar o estúdio pela primeira vez
+### Criar a chave uma vez
 
-O código no GitHub **não deixa o portal no ar sozinho**. Quando chegar a hora de disponibilizar o site, ele precisa de uma implantação compatível com Cloudflare Workers, com um bucket R2 ligado pelo nome `BUCKET` e uma variável secreta `EDITOR_PASSWORD`. As matérias e mídias enviadas são armazenadas nesse bucket; a senha não deve ser incluída no repositório. O endereço público do portal pode ser divulgado, mas `/estudio` exige a senha.
+No GitHub, vá a **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**. Selecione apenas o repositório `canneli/segue-o-baile-tv` e a permissão **Contents: Read and write**. Escolha uma validade, copie a chave e guarde-a em um gerenciador de senhas. Daniel precisa ser colaborador do repositório ou usar uma chave emitida por uma conta que tenha permissão de escrita. Nunca cole a chave em uma matéria, mensagem pública ou arquivo do repositório.
+
+O Estúdio é uma página pública; **a chave é o controle de publicação**. Se ela vazar, revogue-a imediatamente no GitHub. Cada envio fica registrado no histórico do repositório.
+
+## Como o site funciona
+
+O GitHub Pages entrega arquivos HTML, CSS e JavaScript; ele não executa servidores nem guarda uploads feitos por visitantes. Por isso, o Estúdio grava matérias em `posts/*.json` e mídias em `media/` por meio da API do GitHub. A automação [pages.yml](.github/workflows/pages.yml) reconstrói as páginas após cada envio. O código antigo de Cloudflare Worker está preservado em `src/worker.js`, mas **não participa da publicação pelo Pages**.
+
+Para uso no GitHub Free, o repositório precisa ser **público** e, em **Settings → Pages → Build and deployment**, a fonte precisa estar em **GitHub Actions**. O Pages exibe o conteúdo publicamente; não coloque senhas ou materiais privados em `posts/` ou `media/`.
 
 ## Conteúdo de exemplo
 
-As seis matérias de exemplo partem de vídeos do [canal oficial Segue o Baile TV](https://www.youtube.com/@SegueoBaileTV/videos). Os textos são chamadas editoriais breves, sem citações atribuídas aos entrevistados; o vídeo incorporado é a fonte principal de cada matéria.
+As matérias usam estes vídeos do [canal oficial Segue o Baile TV](https://www.youtube.com/@SegueoBaileTV/videos). Os textos são chamadas editoriais breves, sem falas inventadas ou atribuídas aos entrevistados.
 
 - [Baile funk das antigas](https://www.youtube.com/watch?v=xRmK5hE16ko)
 - [Jojo Toddynho](https://www.youtube.com/watch?v=5BkZ09SDxOU)
@@ -29,13 +37,4 @@ As seis matérias de exemplo partem de vídeos do [canal oficial Segue o Baile T
 
 ## Conferir localmente
 
-Com Node.js 22 ou mais recente:
-
-```sh
-node build.mjs
-node scripts/preview.mjs
-```
-
-Abra `http://127.0.0.1:4173`. A prévia local mostra o portal e a tela de entrada do estúdio, mas não grava matérias; a publicação durável exige o bucket R2 e a senha configurados na implantação.
-
-O código não depende de pacotes npm. `node tests/smoke.mjs` verifica as páginas, o acesso ao estúdio e o fluxo de publicação com armazenamento simulado.
+Com Node.js 22 ou mais recente, execute `node build.mjs`, `node build-pages.mjs` e `node tests/pages.mjs`. Os arquivos prontos ficam em `dist/pages/`. O teste original do Worker pode ser executado com `node tests/smoke.mjs`.
